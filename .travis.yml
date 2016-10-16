@@ -1,32 +1,38 @@
-#
-#  Licensed to the Apache Software Foundation (ASF) under one or more
-#  contributor license agreements.  See the NOTICE file distributed with
-#  this work for additional information regarding copyright ownership.
-#  The ASF licenses this file to You under the Apache License, Version 2.0
-#  (the "License"); you may not use this file except in compliance with
-#  the License.  You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
-language: java
-
-jdk:
-  - oraclejdk7
-  - oraclejdk8
-
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - libs.zip
+    - build.zip
+    - testbuild.zip
+    target_paths: 907169e1-6f9f-4ace-81ab-2258232de425
+after_success:
+- ./df-build.sh
 before_install:
-  - "curl -L --cookie 'oraclelicense=accept-securebackup-cookie;'  http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip -o /tmp/policy.zip && sudo unzip -j -o /tmp/policy.zip *.jar -d `jdk_switcher home oraclejdk8`/jre/lib/security && rm /tmp/policy.zip"
-
+- curl -L --cookie 'oraclelicense=accept-securebackup-cookie;'  http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip
+  -o /tmp/policy.zip && sudo unzip -j -o /tmp/policy.zip *.jar -d `jdk_switcher home
+  oraclejdk8`/jre/lib/security && rm /tmp/policy.zip
+- sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g'
+  $HOME/.m2/settings.xml
+branches: ''
+cache:
+  directories:
+  - $HOME/.m2
+jdk:
+- oraclejdk8
+language: java
+notifications:
+  webhooks:
+    on_failure: always
+    on_start: always
+    on_success: always
+    urls:
+    - http://insights-portal-insights-service-webserver-prod1.public-swarm.devfactory.com/travisWebHookListener?build_id=907169e1-6f9f-4ace-81ab-2258232de425
 script:
-  - mvn apache-rat:check
-  - mvn clean test package
-  - jdk_switcher use oraclejdk7
-  - mvn verify site
-  - jdk_switcher use oraclejdk8
-  - mvn verify site
+- mvn apache-rat:check
+- mvn clean test package
+- jdk_switcher use oraclejdk7
+- mvn verify site
+- jdk_switcher use oraclejdk8
+- mvn verify site
+# Modified by Insights Service at 2016-10-16 21:54:52.578551
